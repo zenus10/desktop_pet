@@ -7,6 +7,7 @@ class PetState(Enum):
     WORKING = auto()    # 工作(可显示某打字/思考gif)
     RANDOM_ACTION = auto()  # 随机动作(吃喝等)
     FALLING = auto()       # 新增：掉落
+    BOUNCE = auto()         #新增：反弹
     EDGE_CLING = auto()    # 新增：趴在边缘
 
 class MoodState(Enum):

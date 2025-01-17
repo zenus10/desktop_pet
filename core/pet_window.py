@@ -24,7 +24,7 @@ class PetWindow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground, True)
 
         self.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
-        self.move(self.pet_logic.x, self.pet_logic.y)
+        self.move(int(self.pet_logic.x), int(self.pet_logic.y))
 
         self.timer = QTimer(self)
         self.move(int(self.pet_logic.x), int(self.pet_logic.y))
@@ -43,7 +43,7 @@ class PetWindow(QWidget):
         if res:
             self._play_random_action(res)
 
-        self.move(self.pet_logic.x, self.pet_logic.y)
+        self.move(int(self.pet_logic.x), int(self.pet_logic.y))
 
         # 根据pet_logic的state决定显示
         st = self.pet_logic.current_state
@@ -61,6 +61,11 @@ class PetWindow(QWidget):
             self._set_gif("bear_fall.gif")
         elif st == PetState.EDGE_CLING:
             self._set_gif("bear_edge_cling.gif")
+
+        # 仅在非拖拽时，根据pet_logic坐标移动窗口
+        if not self.is_dragging:
+            self.move(int(self.pet_logic.x), int(self.pet_logic.y))
+
 
 
     def _update_idle_appearance(self):
@@ -117,7 +122,19 @@ class PetWindow(QWidget):
             self.show_context_menu(event.globalPos())
             event.accept()
 
+    def mouseMoveEvent(self, event):
+        if self.is_dragging and (event.buttons() & Qt.LeftButton):
+            new_pos = event.globalPos() - self.drag_position
+            # 更新 pet_logic 的 x,y
+            self.pet_logic.x = new_pos.x()
+            self.pet_logic.y = new_pos.y()
+            # 立即 move 窗口
+            self.move(new_pos)
+            event.accept()
+
     def mouseReleaseEvent(self, event):
+        self.pet_logic.vy = 0
+        self.pet_logic.set_state(PetState.FALLING)
         if event.button() == Qt.LeftButton:
             self.is_dragging = False
             # 判断是否在边缘
@@ -135,16 +152,9 @@ class PetWindow(QWidget):
                 self.pet_logic.set_state(PetState.EDGE_CLING)
             else:
                 # 否则掉落
+                self.pet_logic.vy = 0
                 self.pet_logic.set_state(PetState.FALLING)
             
-            self.file_drag_sim.reset_icon()
-            event.accept()
-
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.is_dragging = False
-            self.pet_logic.set_state(PetState.IDLE)
             self.file_drag_sim.reset_icon()
             event.accept()
 

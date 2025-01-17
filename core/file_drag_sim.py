@@ -14,7 +14,7 @@ class FileDragSim(QLabel):
         self.hide()
 
     def show_near_pet(self, x, y):
-        self.move(x+40, y+40)
+        self.move(int(x) + 40, int(y) + 40)
         self.show()
 
     def reset_icon(self):
